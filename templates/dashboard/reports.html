@@ -1,0 +1,110 @@
+{% extends "dashboard/base.html" %}
+{% block nav_reports %}active{% endblock %}
+{% block page_title %}Reports — Expenses{% endblock %}
+
+{% block extra_style %}
+<style>
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 24px; }
+  .stat-card { background:#111c44; border-radius:16px; padding:20px; display:flex; align-items:center; gap:16px; }
+  .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .stat-icon.green  { background:rgba(76,175,80,0.15); }
+  .stat-icon.blue   { background:rgba(33,150,243,0.15); }
+  .stat-icon.orange { background:rgba(255,152,0,0.15); }
+  .stat-icon.red    { background:rgba(244,67,54,0.15); }
+  .stat-label { font-size:12px; color:#8f9bba; margin-bottom:4px; }
+  .stat-value { font-size:20px; font-weight:700; }
+
+  table { width:100%; border-collapse:collapse; }
+  th { background:#1a2a5e; padding:14px 16px; text-align:left; font-size:12px; color:#8f9bba; text-transform:uppercase; letter-spacing:1px; }
+  td { padding:14px 16px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,0.03); }
+  .badge {
+    padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase;
+  }
+  .badge-school   { background:rgba(76,175,80,0.2);  color:#4caf50; }
+  .badge-personal { background:rgba(33,150,243,0.2); color:#2196f3; }
+  .badge-other    { background:rgba(255,152,0,0.2);  color:#ff9800; }
+  .avatar {
+    width:32px; height:32px; border-radius:50%;
+    background:linear-gradient(135deg,#4a7fff,#1a3a8f);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; margin-right:8px;
+  }
+  .user-cell { display:flex; align-items:center; }
+  .amount-cell { color:#27c98b; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stats row -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon green">📚</div>
+    <div>
+      <div class="stat-label">School Total</div>
+      <div class="stat-value">${{ total_school|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue">👤</div>
+    <div>
+      <div class="stat-label">Personal Total</div>
+      <div class="stat-value">${{ total_personal|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">📦</div>
+    <div>
+      <div class="stat-label">Other Total</div>
+      <div class="stat-value">${{ total_other|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">💸</div>
+    <div>
+      <div class="stat-label">Grand Total</div>
+      <div class="stat-value">${{ grand_total|floatformat:2 }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">All Expenses</div>
+    <span style="color:#8f9bba; font-size:13px;">{{ expenses|length }} records</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>User</th>
+        <th>Date</th>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for exp in expenses %}
+      <tr>
+        <td style="color:#8f9bba;">{{ forloop.counter }}</td>
+        <td>
+          <div class="user-cell">
+            <div class="avatar">{{ exp.user.username|slice:":2"|upper }}</div>
+            {{ exp.user.username }}
+          </div>
+        </td>
+        <td style="color:#8f9bba;">{{ exp.date }}</td>
+        <td><span class="badge badge-{{ exp.category }}">{{ exp.category }}</span></td>
+        <td class="amount-cell">${{ exp.amount }}</td>
+        <td style="color:#8f9bba;">{{ exp.description|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center; color:#8f9bba; padding:40px;">No expenses found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

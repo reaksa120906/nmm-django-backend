@@ -1,0 +1,339 @@
+{% extends "dashboard/base.html" %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Real-time overview of NMM Budget Tracker{% endblock %}
+
+{% block extra_style %}
+<style>
+  /* ── Stat cards ─────────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    border-radius: 18px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    opacity: 0.15;
+  }
+
+  .stat-card.blue   { background: linear-gradient(135deg, #0d1f4e, #112368); }
+  .stat-card.blue::before   { background: #4a7fff; }
+  .stat-card.green  { background: linear-gradient(135deg, #0a2a1e, #0e3325); }
+  .stat-card.green::before  { background: #27c98b; }
+  .stat-card.orange { background: linear-gradient(135deg, #2a1500, #341900); }
+  .stat-card.orange::before { background: #ff9f40; }
+  .stat-card.purple { background: linear-gradient(135deg, #1a0d40, #220e52); }
+  .stat-card.purple::before { background: #7c5cfc; }
+
+  .stat-emoji {
+    font-size: 28px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .stat-trend {
+    font-size: 11px;
+    margin-top: 8px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* ── Grid layout ─────────────────────────────────────── */
+  .content-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  /* ── Activity list ───────────────────────────────────── */
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .activity-item:last-child { border-bottom: none; }
+
+  .act-avatar {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4a7fff, #7c5cfc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .act-name  { font-size: 13px; font-weight: 600; }
+  .act-desc  { font-size: 11px; color: #6b7fa3; margin-top: 2px; }
+  .act-amt   { font-size: 13px; font-weight: 700; color: #27c98b; margin-left: auto; white-space: nowrap; }
+  .act-time  { font-size: 10px; color: #6b7fa3; text-align: right; }
+
+  .cat-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .cat-school   { background: rgba(76,175,80,0.15);  color: #4caf50; }
+  .cat-personal { background: rgba(33,150,243,0.15); color: #2196f3; }
+  .cat-other    { background: rgba(255,152,0,0.15);  color: #ff9800; }
+
+  /* ── Chart ───────────────────────────────────────────── */
+  .chart-box { position: relative; height: 220px; }
+
+  /* ── Legend ──────────────────────────────────────────── */
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .legend-row:last-child { border-bottom: none; }
+
+  .legend-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .legend-bar { height: 100%; border-radius: 6px; }
+
+  .legend-dot  { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { font-size: 13px; font-weight: 500; width: 70px; }
+  .legend-pct  { font-size: 13px; font-weight: 700; width: 42px; text-align: right; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Stat cards ─────────────────────────────────────────────── -->
+<div class="stats-grid">
+  <div class="stat-card blue">
+    <span class="stat-emoji">👥</span>
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value">{{ total_users }}</div>
+    <div class="stat-trend">Registered accounts</div>
+  </div>
+  <div class="stat-card green">
+    <span class="stat-emoji">💸</span>
+    <div class="stat-label">Total Expense</div>
+    <div class="stat-value">${{ total_expense|floatformat:0 }}</div>
+    <div class="stat-trend">All time spending</div>
+  </div>
+  <div class="stat-card orange">
+    <span class="stat-emoji">💵</span>
+    <div class="stat-label">Total Income</div>
+    <div class="stat-value">${{ total_income|floatformat:0 }}</div>
+    <div class="stat-trend">All time income</div>
+  </div>
+  <div class="stat-card purple">
+    <span class="stat-emoji">🐷</span>
+    <div class="stat-label">Total Savings</div>
+    <div class="stat-value">${{ total_savings|floatformat:0 }}</div>
+    <div class="stat-trend">All saving goals</div>
+  </div>
+</div>
+
+<!-- ── Middle row ─────────────────────────────────────────────── -->
+<div class="content-row">
+
+  <!-- Recent activity -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Recent Activities</div>
+      <a href="/reports/" class="link">View all →</a>
+    </div>
+    {% for exp in recent %}
+    <div class="activity-item">
+      <div class="act-avatar">{{ exp.user.username|slice:":2"|upper }}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="act-name">{{ exp.user.username }}</div>
+        <div class="act-desc">
+          <span class="cat-badge cat-{{ exp.category }}">{{ exp.category }}</span>
+          &nbsp;{{ exp.date }}
+        </div>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div class="act-amt">${{ exp.amount }}</div>
+        <div class="act-time">{{ exp.created_at|timesince }} ago</div>
+      </div>
+    </div>
+    {% empty %}
+    <p style="color:#6b7fa3; font-size:13px; text-align:center; padding:30px 0;">No expenses recorded yet</p>
+    {% endfor %}
+  </div>
+
+  <!-- 7-day bar chart -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Last 7 Days</div>
+      <span class="badge badge-blue">This Week</span>
+    </div>
+    <div class="chart-box"><canvas id="barChart"></canvas></div>
+  </div>
+
+</div>
+
+<!-- ── Bottom row ─────────────────────────────────────────────── -->
+<div class="bottom-row">
+
+  <!-- Pie chart -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Expense Breakdown</div>
+      <span class="badge badge-purple">All Time</span>
+    </div>
+    <div class="chart-box" style="height:180px;"><canvas id="pieChart"></canvas></div>
+  </div>
+
+  <!-- Category summary -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Category Summary</div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-dot" style="background:#4caf50;"></div>
+      <div class="legend-name">School</div>
+      <div class="legend-bar-wrap">
+        <div class="legend-bar" style="width:{{ school_pct }}%; background:#4caf50;"></div>
+      </div>
+      <div class="legend-pct" style="color:#4caf50;">{{ school_pct }}%</div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-dot" style="background:#2196f3;"></div>
+      <div class="legend-name">Personal</div>
+      <div class="legend-bar-wrap">
+        <div class="legend-bar" style="width:{{ personal_pct }}%; background:#2196f3;"></div>
+      </div>
+      <div class="legend-pct" style="color:#2196f3;">{{ personal_pct }}%</div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-dot" style="background:#ff9800;"></div>
+      <div class="legend-name">Other</div>
+      <div class="legend-bar-wrap">
+        <div class="legend-bar" style="width:{{ other_pct }}%; background:#ff9800;"></div>
+      </div>
+      <div class="legend-pct" style="color:#ff9800;">{{ other_pct }}%</div>
+    </div>
+
+    <div style="margin-top:28px; padding:16px; background:rgba(74,127,255,0.07); border-radius:12px; border:1px solid rgba(74,127,255,0.15);">
+      <div style="font-size:11px; color:#6b7fa3; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Balance</div>
+      {% with balance=total_income|add:total_expense %}
+      <div style="font-size:22px; font-weight:800; color:{% if total_income > total_expense %}#27c98b{% else %}#ff6b6b{% endif %};">
+        ${{ total_income|floatformat:0 }}
+      </div>
+      {% endwith %}
+      <div style="font-size:11px; color:#6b7fa3; margin-top:4px;">Total income recorded</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Bar chart
+const barCtx = document.getElementById('barChart').getContext('2d');
+new Chart(barCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ days_labels|safe }},
+    datasets: [
+      {
+        label: 'School',
+        data: {{ days_school }},
+        backgroundColor: 'rgba(76,175,80,0.8)',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+      {
+        label: 'Personal',
+        data: {{ days_personal }},
+        backgroundColor: 'rgba(33,150,243,0.8)',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: { color: '#6b7fa3', font: { size: 11, family: 'Inter' }, boxWidth: 10, borderRadius: 3 }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#6b7fa3', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+      y: { ticks: { color: '#6b7fa3', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+    },
+  },
+});
+
+// Pie chart
+const pieCtx = document.getElementById('pieChart').getContext('2d');
+new Chart(pieCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['School', 'Personal', 'Other'],
+    datasets: [{
+      data: [{{ school_total }}, {{ personal_total }}, {{ other_total }}],
+      backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
+      borderWidth: 3,
+      borderColor: '#0a1628',
+      hoverOffset: 6,
+    }],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (i) => ` $${i.raw.toFixed(2)}` } }
+    },
+  },
+});
+</script>
+{% endblock %}

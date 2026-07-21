@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+{% block nav_notifications %}active{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block extra_style %}
+<style>
+  .notif-section-title { font-size:13px; color:#8f9bba; text-transform:uppercase; letter-spacing:1px; margin:20px 0 10px; }
+  .notif-item {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 20px; background:#111c44; border-radius:12px;
+    margin-bottom:10px; border-left:4px solid transparent;
+  }
+  .notif-item.expense { border-left-color:#f44336; }
+  .notif-item.income  { border-left-color:#4caf50; }
+  .notif-icon {
+    width:40px; height:40px; border-radius:50%; display:flex;
+    align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  }
+  .notif-icon.expense { background:rgba(244,67,54,0.15); }
+  .notif-icon.income  { background:rgba(76,175,80,0.15); }
+  .notif-body { flex:1; }
+  .notif-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+  .notif-sub   { font-size:12px; color:#8f9bba; }
+  .notif-right { text-align:right; }
+  .notif-amount { font-size:14px; font-weight:700; }
+  .notif-time   { font-size:11px; color:#8f9bba; }
+  .expense .notif-amount { color:#f44336; }
+  .income  .notif-amount { color:#4caf50; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notif-section-title">💸 Recent Expenses</div>
+{% for exp in recent_expenses %}
+<div class="notif-item expense">
+  <div class="notif-icon expense">💸</div>
+  <div class="notif-body">
+    <div class="notif-title">{{ exp.user.username }} added an expense</div>
+    <div class="notif-sub">{{ exp.category|capfirst }} — {{ exp.date }}</div>
+  </div>
+  <div class="notif-right">
+    <div class="notif-amount">-${{ exp.amount }}</div>
+    <div class="notif-time">{{ exp.created_at|timesince }} ago</div>
+  </div>
+</div>
+{% empty %}
+<div style="color:#8f9bba; font-size:13px; padding:20px 0;">No expenses yet</div>
+{% endfor %}
+
+<div class="notif-section-title">💰 Recent Income</div>
+{% for inc in recent_incomes %}
+<div class="notif-item income">
+  <div class="notif-icon income">💰</div>
+  <div class="notif-body">
+    <div class="notif-title">{{ inc.user.username }} added income</div>
+    <div class="notif-sub">{{ inc.income_type|capfirst }} — {{ inc.month }}</div>
+  </div>
+  <div class="notif-right">
+    <div class="notif-amount">+${{ inc.amount }}</div>
+  </div>
+</div>
+{% empty %}
+<div style="color:#8f9bba; font-size:13px; padding:20px 0;">No income yet</div>
+{% endfor %}
+{% endblock %}

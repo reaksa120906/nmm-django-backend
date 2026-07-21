@@ -1,0 +1,108 @@
+{% extends "dashboard/base.html" %}
+{% block nav_settings %}active{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block extra_style %}
+<style>
+  .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+  .stat-card { background:#111c44; border-radius:16px; padding:20px; display:flex; align-items:center; gap:16px; }
+  .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .stat-icon.blue   { background:rgba(74,127,255,0.15); }
+  .stat-icon.green  { background:rgba(76,175,80,0.15); }
+  .stat-icon.orange { background:rgba(255,152,0,0.15); }
+  .stat-icon.purple { background:rgba(153,102,255,0.15); }
+  .stat-label { font-size:12px; color:#8f9bba; margin-bottom:4px; }
+  .stat-value { font-size:22px; font-weight:700; }
+
+  .settings-section { background:#111c44; border-radius:16px; padding:24px; margin-bottom:18px; }
+  .section-title { font-size:15px; font-weight:700; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .setting-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .setting-row:last-child { border-bottom:none; }
+  .setting-label { font-size:13px; }
+  .setting-sub   { font-size:11px; color:#8f9bba; margin-top:2px; }
+  .setting-value { font-size:13px; color:#4a7fff; font-weight:600; }
+  .btn-link {
+    display:inline-block; padding:8px 18px; border-radius:8px;
+    background:rgba(74,127,255,0.15); color:#4a7fff; font-size:12px;
+    font-weight:600; text-decoration:none; transition:all 0.2s;
+  }
+  .btn-link:hover { background:rgba(74,127,255,0.3); }
+  .btn-danger {
+    display:inline-block; padding:8px 18px; border-radius:8px;
+    background:rgba(244,67,54,0.15); color:#f44336; font-size:12px;
+    font-weight:600; text-decoration:none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Database overview -->
+<div class="settings-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">👥</div>
+    <div><div class="stat-label">Total Users</div><div class="stat-value">{{ total_users }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">💸</div>
+    <div><div class="stat-label">Total Expenses</div><div class="stat-value">{{ total_expenses }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">💰</div>
+    <div><div class="stat-label">Income Records</div><div class="stat-value">{{ total_incomes }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">🐷</div>
+    <div><div class="stat-label">Saving Goals</div><div class="stat-value">{{ total_savings }}</div></div>
+  </div>
+</div>
+
+<!-- Quick links -->
+<div class="settings-section">
+  <div class="section-title">⚙️ Admin Panel</div>
+  <div class="setting-row">
+    <div><div class="setting-label">Django Admin</div><div class="setting-sub">Manage all data directly</div></div>
+    <a href="/django-admin/" class="btn-link">Open Admin</a>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Manage Users</div><div class="setting-sub">Add, edit, or delete users</div></div>
+    <a href="/django-admin/auth/user/" class="btn-link">Manage</a>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Manage Expenses</div><div class="setting-sub">View and edit all expenses</div></div>
+    <a href="/django-admin/api/expense/" class="btn-link">Manage</a>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Manage Income</div><div class="setting-sub">View and edit all income records</div></div>
+    <a href="/django-admin/api/income/" class="btn-link">Manage</a>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Manage Savings</div><div class="setting-sub">View and edit all saving goals</div></div>
+    <a href="/django-admin/api/savings/" class="btn-link">Manage</a>
+  </div>
+</div>
+
+<!-- App info -->
+<div class="settings-section">
+  <div class="section-title">📱 App Information</div>
+  <div class="setting-row">
+    <div><div class="setting-label">App Name</div></div>
+    <div class="setting-value">NMM – Budget Tracker</div>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Backend</div></div>
+    <div class="setting-value">Django REST Framework</div>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Frontend</div></div>
+    <div class="setting-value">Flutter</div>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">Database</div></div>
+    <div class="setting-value">SQLite3</div>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-label">API Base URL</div></div>
+    <div class="setting-value">http://127.0.0.1:8000/api/</div>
+  </div>
+</div>
+{% endblock %}

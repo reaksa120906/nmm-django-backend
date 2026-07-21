@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NMM Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg:        #060d1f;
+    --bg2:       #0a1628;
+    --sidebar:   #080f20;
+    --card:      rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.08);
+    --accent:    #4a7fff;
+    --accent2:   #7c5cfc;
+    --green:     #27c98b;
+    --orange:    #ff9f40;
+    --red:       #ff6b6b;
+    --text:      #e8edf5;
+    --muted:     #6b7fa3;
+    --radius:    16px;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ───────────────────────────────────────────────────── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar);
+    border-right: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0 20px;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100%;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px 32px;
+  }
+
+  .brand-logo {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(74,127,255,0.35);
+    flex-shrink: 0;
+    background: #0a1628;
+  }
+  .brand-logo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .brand-name { font-size: 15px; font-weight: 700; color: #fff; }
+  .brand-role { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .sidebar-section {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 20px 20px 8px;
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 18px;
+    margin: 2px 12px;
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(74,127,255,0.18), rgba(124,92,252,0.12));
+    color: #fff;
+    border: 1px solid rgba(74,127,255,0.2);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 50%;
+    transform: translateY(-50%);
+    width: 4px; height: 60%;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    border-radius: 0 4px 4px 0;
+  }
+
+  .nav-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon { background: rgba(74,127,255,0.2); }
+  .nav-item:not(.active) .nav-icon { background: rgba(255,255,255,0.05); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid var(--card-border);
+  }
+  .sidebar-footer-user {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar-sm {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .footer-name { font-size: 13px; font-weight: 600; }
+  .footer-role { font-size: 11px; color: var(--muted); }
+
+  /* ── Main ──────────────────────────────────────────────────────── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 28px 32px;
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  /* ── Topbar ────────────────────────────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .topbar-left .page-title {
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(90deg, #fff, #8baaf5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .topbar-left .page-sub {
+    font-size: 12px; color: var(--muted); margin-top: 3px;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .topbar-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px;
+    transition: background 0.2s;
+  }
+  .topbar-btn:hover { background: rgba(255,255,255,0.08); }
+
+  .topbar-user {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 6px 12px 6px 6px;
+  }
+
+  /* ── Glass card ────────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 22px;
+    backdrop-filter: blur(10px);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .badge-blue   { background: rgba(74,127,255,0.15); color: #4a7fff; }
+  .badge-green  { background: rgba(39,201,139,0.15); color: #27c98b; }
+  .badge-orange { background: rgba(255,159,64,0.15);  color: #ff9f40; }
+  .badge-purple { background: rgba(124,92,252,0.15);  color: #9b8fff; }
+
+  a { color: inherit; }
+  a.link { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500; }
+  a.link:hover { text-decoration: underline; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+</style>
+{% block extra_style %}{% endblock %}
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <img src="{% static 'images/logo.png' %}" alt="NMM Logo">
+    </div>
+    <div>
+      <div class="brand-name">Budget Tracker</div>
+      <div class="brand-role">Admin Panel</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Main Menu</div>
+
+  <a href="/dashboard/" class="nav-item {% block nav_dashboard %}{% endblock %}">
+    <div class="nav-icon">🏠</div> Dashboard
+  </a>
+  <a href="/reports/" class="nav-item {% block nav_reports %}{% endblock %}">
+    <div class="nav-icon">📊</div> Reports
+  </a>
+  <a href="/savings/" class="nav-item {% block nav_savings %}{% endblock %}">
+    <div class="nav-icon">💰</div> Savings
+  </a>
+
+  <div class="sidebar-section">System</div>
+
+  <a href="/notifications/" class="nav-item {% block nav_notifications %}{% endblock %}">
+    <div class="nav-icon">🔔</div> Notifications
+  </a>
+  <a href="/profile/" class="nav-item {% block nav_profile %}{% endblock %}">
+    <div class="nav-icon">👥</div> Users
+  </a>
+  <a href="/settings/" class="nav-item {% block nav_settings %}{% endblock %}">
+    <div class="nav-icon">⚙️</div> Settings
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-user">
+      <div class="avatar-sm">{{ admin_user|slice:":2"|upper }}</div>
+      <div>
+        <div class="footer-name">{{ admin_user }}</div>
+        <div class="footer-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+      <div class="page-sub">{% block page_sub %}Welcome back, {{ admin_user }}{% endblock %}</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-btn" title="Notifications">🔔</div>
+      <a href="/django-admin/" class="topbar-btn" title="Django Admin" style="text-decoration:none;">🔧</a>
+      <div class="topbar-user">
+        <div class="avatar-sm" style="width:28px;height:28px;font-size:10px;">{{ admin_user|slice:":2"|upper }}</div>
+        <span style="font-size:13px;font-weight:600;">{{ admin_user }}</span>
+      </div>
+    </div>
+  </div>
+
+  {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

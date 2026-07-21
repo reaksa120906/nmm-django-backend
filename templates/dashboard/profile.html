@@ -1,0 +1,74 @@
+{% extends "dashboard/base.html" %}
+{% block nav_profile %}active{% endblock %}
+{% block page_title %}Profile & Users{% endblock %}
+
+{% block extra_style %}
+<style>
+  .admin-card {
+    background:#111c44; border-radius:16px; padding:28px;
+    display:flex; align-items:center; gap:24px; margin-bottom:24px;
+  }
+  .admin-avatar {
+    width:80px; height:80px; border-radius:50%;
+    background:linear-gradient(135deg,#4a7fff,#1a3a8f);
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px; font-weight:700; flex-shrink:0;
+  }
+  .admin-name  { font-size:20px; font-weight:700; margin-bottom:4px; }
+  .admin-role  { font-size:13px; color:#4a7fff; font-weight:600; margin-bottom:8px; }
+  .admin-email { font-size:13px; color:#8f9bba; }
+  .badge-admin { background:rgba(74,127,255,0.2); color:#4a7fff; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+
+  .users-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+  .user-card {
+    background:#111c44; border-radius:14px; padding:20px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .user-avatar {
+    width:56px; height:56px; border-radius:50%;
+    background:linear-gradient(135deg,#4a7fff,#1a3a8f);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:700; margin-bottom:12px;
+  }
+  .user-name   { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .user-email  { font-size:11px; color:#8f9bba; margin-bottom:8px; word-break:break-all; }
+  .pill        { font-size:11px; padding:3px 10px; border-radius:20px; margin-bottom:6px; display:inline-block; }
+  .pill-gender { background:rgba(74,127,255,0.15); color:#4a7fff; }
+  .pill-admin  { background:rgba(255,152,0,0.15);  color:#ff9800; }
+  .user-joined { font-size:11px; color:#8f9bba; }
+  .section-title { font-size:15px; font-weight:700; margin-bottom:16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin card -->
+<div class="admin-card">
+  <div class="admin-avatar">{{ admin_info.username|slice:":2"|upper }}</div>
+  <div>
+    <div class="admin-name">{{ admin_info.username }}</div>
+    <div class="admin-role">Administrator</div>
+    <div class="admin-email">{{ admin_info.email|default:"No email set" }}</div>
+    <br>
+    <span class="badge-admin">⭐ SUPER ADMIN</span>
+  </div>
+</div>
+
+<!-- Users list -->
+<div class="section-title">👥 All Registered Users ({{ users|length }})</div>
+<div class="users-grid">
+  {% for user in users %}
+  <div class="user-card">
+    <div class="user-avatar">{{ user.initials }}</div>
+    <div class="user-name">{{ user.username }}</div>
+    <div class="user-email">{{ user.email }}</div>
+    <span class="pill pill-gender">{{ user.gender }}</span>
+    {% if user.is_superuser %}
+    <span class="pill pill-admin">⭐ Admin</span>
+    {% endif %}
+    <div class="user-joined">Joined: {{ user.date_joined|date:"M Y" }}</div>
+  </div>
+  {% empty %}
+  <div style="color:#8f9bba; font-size:13px;">No users found</div>
+  {% endfor %}
+</div>
+{% endblock %}
