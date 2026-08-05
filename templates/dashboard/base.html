@@ -168,6 +168,7 @@
     font-size: 22px; font-weight: 800;
     background: linear-gradient(90deg, #fff, #8baaf5);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -295,7 +296,7 @@
     </div>
     <div class="topbar-right">
       <div class="topbar-btn" title="Notifications">🔔</div>
-      <a href="/django-admin/" class="topbar-btn" title="Django Admin" style="text-decoration:none;">🔧</a>
+      <a href="/logout/" class="topbar-btn" title="Sign Out" style="text-decoration:none;">🚪</a>
       <div class="topbar-user">
         <div class="avatar-sm" style="width:28px;height:28px;font-size:10px;">{{ admin_user|slice:":2"|upper }}</div>
         <span style="font-size:13px;font-weight:600;">{{ admin_user }}</span>
